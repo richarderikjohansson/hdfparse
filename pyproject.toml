@@ -13,6 +13,8 @@ dependencies = [
     "h5py>=3.13.0",
     "matplotlib>=3.10.3",
     "numpy>=2.2.6",
+    "pandas>=2.2.3",
+    "rich>=14.0.0",
     "scipy>=1.15.3",
 ]
 
@@ -23,6 +25,17 @@ build-backend = "setuptools.build_meta"
 [project.scripts]
 hdfparse = "hdfparse.cli:main"
 
+# tooling setuptools
+[tool.setuptools]
+include-package-data = true
+packages = ["hdfparse"]
+package-dir = {"" = "src"}
+
+[tool.setuptools.package-data]
+"hdfparse.conf" = ["conf.toml"]
+
+
+# tooling ruff
 [tool.ruff]
 exclude = [
     ".bzr",

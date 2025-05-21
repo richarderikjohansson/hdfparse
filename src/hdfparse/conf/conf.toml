@@ -1,0 +1,8 @@
+[help]
+input = "Input path for the file or a directory of files"
+plot = "Flag to plot data read" 
+export = "File type of the exported data. Allowed types are 'csv' and 'mat'"
+
+[allowed_export]
+matlab = ".mat"
+csv = ".csv" 
