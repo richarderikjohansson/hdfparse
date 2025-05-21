@@ -15,64 +15,65 @@ class ParseInput:
         self.input = inp
         self.export = export
         self.cwd = Path.cwd()
+        self.exportdir = "export"
 
-    def get_path(self) -> Path:
+    def get_path(self):
         absolute_path = Path(self.input)
         relative_path = self.cwd / self.input
 
         if relative_path.exists():
-            return relative_path
-
+            path = relative_path
         elif absolute_path.exists():
-            return absolute_path
-
+            path = absolute_path
         else:
             PathNotFound(f"Can not locate path from input'{self.input}'")
 
-    def resolve_path(self) -> Path | List[Path]:
-        path = self.get_path()
-        dirpath = self.get_basedir()
+        self.path = path
+
+    def resolve_path(self):
+        self.get_dirpath()
 
         if self.export is not None:
-            Path.mkdir(path.parent / "export", exist_ok=True)
+            Path.mkdir(self.path.parent / self.exportdir, exist_ok=True)
 
-            if dirpath == path:
-                basedir = dirpath.parts[-1]
-                subd = fast_scandir(dirpath)
-                export_tree = [p.split("")]
+            if self.dirpath == self.path:
+                basedir = self.dirpath.parts[-1]
+                subd = get_dirtrees(basedir)
+                export_paths = []
 
-    def get_basedir(self) -> Path:
-        path = self.get_path()
+                for sub in subd:
+                    export_path = self.path.parent / self.exportdir / sub 
+                    export_paths.append(export_path)
+                    Path.mkdir(export_path)
+            else:
+                export_paths = self.path.parent / self.exportdir
 
-        if path.is_file():
-            return path.parent
+        self.files = self.find_input_files()
+        self.export_paths = export_paths
+            
+    def get_dirpath(self):
+        self.get_path()
+
+        if self.path.is_file():
+            dirpath = self.path.parent
         else:
-            return path
+            dirpath = self.path
+
+        self.dirpath = dirpath
+
+    def find_input_files(self):
+        if self.path.is_file():
+            self.files = self.path
+        else:
+            files = Path.rglob(".hdf5")
+            self.files = files
 
 
-def fast_scandir(dirname):
+def get_dirtrees(dirname):
     subfolders = [f.path for f in os.scandir(dirname) if f.is_dir()]
     for dirname in list(subfolders):
-        subfolders.extend(fast_scandir(dirname))
+        subfolders.extend(get_dirtrees(dirname))
     return subfolders
-
-
-def parse_input(input: str) -> Path | List[Path]:
-    basedir = Path.cwd()
-    absolute_path = Path(input)
-    path = basedir / input
-
-    if not path.exists() or not absolute_path.exists():
-        PathNotFound(f"'{path}' can not be resolved, check your input")
-
-    if path.is_dir():
-        # get paths to all files
-        #
-        pass
-    elif path.is_file() and path.suffix.lower() == ".hdf5":
-        pass
-    else:
-        pass
 
 
 def load_config() -> dict[str, Any]:
