@@ -1,6 +1,6 @@
 import argparse
-from .io import check_if_file_exists, read_file
-from .plot import plot_spectra, plot_vmr, plot_avk, plot_jacobian
+from .io import check_if_file_exists, read_file, save_matlab
+from .plot import Figures
 
 allowed_units = ["spectra", "vmr", "avk", "jacobian"]
 
@@ -8,9 +8,6 @@ allowed_units = ["spectra", "vmr", "avk", "jacobian"]
 def main():
     parser = argparse.ArgumentParser(add_help=True)
     parser.add_argument("filename", type=str, help="HDF5 file to read")
-    parser.add_argument("unit", type=str,
-                        help="Unit to plot and/or export. Allowed is 'spectra', 'vmr', 'avk' and 'jacobian'")
-
     parser.add_argument("--plot", action="store_true")
     parser.add_argument("--export", action="store_true")
     args = parser.parse_args()
@@ -19,18 +16,14 @@ def main():
         data = read_file(args.filename)
 
     if args.plot:
-        match args.unit:
-            case "spectra":
-                plot_spectra(filename=args.filename, data=data)
+        obj = Figures(filename=args.filename, data=data)
+        obj.plot_spectra()
+        obj.plot_vmr()
+        obj.plot_avk()
+        obj.plot_jacobian()
 
-            case "vmr":
-                plot_vmr(filename=args.filename, data=data)
-
-            case "avk":
-                plot_avk(filename=args.filename, data=data)
-
-            case "jacobian":
-                plot_jacobian(filename=args.filename, data=data)
+    if args.export:
+        save_matlab(filename=args.filename, data=data)
 
 
 if __name__ == "__main__":
