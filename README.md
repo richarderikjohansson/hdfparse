@@ -8,13 +8,26 @@ well.
 ## Installing CLI
 
 This tutorial is aimed to show how to install hdfparse with uv. If still have not installed uv on 
-your machine see tutorial at [https://docs.astral.sh/uv/](https://docs.astral.sh/uv/). I have 
-prepared a bash script, named `install.sh` that installs the dependencies and the tool seen 
-in the root of the project, and activating the environment. Simply run the following from the 
-project root:
+your machine see tutorial at [https://docs.astral.sh/uv/](https://docs.astral.sh/uv/). To create 
+a new environment for this tool, and also install all necessary dependencies uv have one single 
+command for this and should be run from the project root:
 
 ```bash
-bash install.sh
+uv sync
+```
+
+With this command is a virtual environment installed in `.venv`. To activate this you need to know 
+which shell you are using. Most likely you are using `zsh` or `bash`. To activate the environment 
+run:
+
+```bash
+source .venv/bin/activate
+```
+
+and if you are using `fish`
+
+```fish
+source .venv/bin/activate.fish
 ```
 
 ## Usage: Plotting
