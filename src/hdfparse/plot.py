@@ -21,17 +21,28 @@ class Figures:
         spectra = self.data["y"]
         fit = self.data["yf"]
 
-        gs = GridSpec(1, 1)
+        gs = GridSpec(2, 1, height_ratios=[2, 1])
         fig = plt.figure()
 
-        ax = fig.add_subplot(gs[0, 0])
-        ax.minorticks_on()
-        ax.set_title(f"Spectra from {self.filename}")
-        ax.set_xlabel(r"$\nu$ [GHz]")
-        ax.set_ylabel(r"$T_B$ [K]")
-        ax.grid(which="both", alpha=0.2)
-        ax.plot(frequency, spectra, label="Measurement", color="black")
-        ax.plot(frequency, fit, label="Fit", color="red")
+        upper = fig.add_subplot(gs[0, 0])
+        lower = fig.add_subplot(gs[1, 0])
+
+        upper.minorticks_on()
+        upper.set_title(f"Spectra from {self.filename}")
+        upper.set_ylabel(r"$T_B$ [K]")
+        upper.grid(which="both", alpha=0.2)
+        upper.plot(frequency, spectra, label="Measurement", color="black")
+        upper.plot(frequency, fit, label="Fit", color="red")
+        upper.legend()
+
+        lower.plot(frequency, spectra-fit, label="Residual", color="dimgray")
+        lower.minorticks_on()
+        lower.grid(which="both", alpha=0.2)
+        lower.set_ylabel(r"$\Delta T_B$ [K]")
+        lower.set_xlabel(r"$\nu$ [GHz]")
+        lower.set_ylim(-1, 1)
+        lower.legend()
+
         plt.savefig(self.figsdir / "spectra.pdf")
         plt.close()
 

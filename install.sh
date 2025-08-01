@@ -4,7 +4,7 @@ echo "Installing dependencies and CLI in .venv with uv"
 uv sync
 
 # Activate environment
-VENV_DIR="$.venv"
+VENV_DIR=".venv"
 CURRENT_SHELL=$(basename "$SHELL")
 
 case "$CURRENT_SHELL" in
