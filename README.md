@@ -26,7 +26,7 @@ source .venv/bin/activate
 
 and if you are using `fish`
 
-```fish
+```bash
 source .venv/bin/activate.fish
 ```
 
