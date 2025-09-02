@@ -10,11 +10,12 @@ def calculate_mr(avk) -> np.ndarray:
     return mr
 
 
-class Figures:
+class RetFigs:
     def __init__(self, filename: str, data: dict):
         self.figsdir = mk_figsdir(filename=filename)
         self.filename = Path(filename).name
         self.data = data
+        self.savebase = self.filename.split(".")[0]
 
     def plot_spectra(self):
         frequency = self.data["f_backend"] / 1e9
@@ -30,20 +31,20 @@ class Figures:
         upper.minorticks_on()
         upper.set_title(f"Spectra from {self.filename}")
         upper.set_ylabel(r"$T_B$ [K]")
-        upper.grid(which="both", alpha=0.2)
+        upper.grid(which="both", linestyle="dashed", alpha=0.2)
         upper.plot(frequency, spectra, label="Measurement", color="black")
         upper.plot(frequency, fit, label="Fit", color="red")
         upper.legend()
 
         lower.plot(frequency, spectra-fit, label="Residual", color="dimgray")
         lower.minorticks_on()
-        lower.grid(which="both", alpha=0.2)
+        lower.grid(which="both", linestyle="dashed", alpha=0.2)
         lower.set_ylabel(r"$\Delta T_B$ [K]")
         lower.set_xlabel(r"$\nu$ [GHz]")
         lower.set_ylim(-1, 1)
         lower.legend()
 
-        plt.savefig(self.figsdir / "spectra.pdf")
+        plt.savefig(self.figsdir / f"{self.savebase}_ret_spectra.pdf")
         plt.close()
 
     def plot_vmr(self):
@@ -65,7 +66,7 @@ class Figures:
         ax.semilogy(apriori, pressure, color="black", label="apriori")
         ax.semilogy(vmr, pressure, label="Retrived")
         ax.legend()
-        plt.savefig(self.figsdir / "vmr.pdf")
+        plt.savefig(self.figsdir / f"{self.savebase}_vmr.pdf")
         plt.close()
 
     def plot_avk(self):
@@ -112,7 +113,7 @@ class Figures:
         )
 
         ax.legend()
-        plt.savefig(self.figsdir / "avk_line.pdf")
+        plt.savefig(self.figsdir / f"{self.savebase}_avk_line.pdf")
         plt.close()
 
         X, Y = np.meshgrid(pressure, pressure)
@@ -130,7 +131,7 @@ class Figures:
         ax.set_title(f"Averaging Kernels from {self.filename}")
         cf = ax.contourf(X, Y, avk, cmap="jet")
         plt.colorbar(cf, ax=ax, label="Averaging Kernels")
-        fig.savefig(self.figsdir / "avk_cf.pdf")
+        fig.savefig(self.figsdir / f"{self.savebase}_avk_cf.pdf")
         plt.close()
 
     def plot_jacobian(self):
@@ -151,5 +152,36 @@ class Figures:
         plt.yscale("log")
         cf = ax.contourf(X, Y, jacobian.transpose(), cmap="jet")
         plt.colorbar(cf, ax=ax)
-        plt.savefig(self.figsdir / "jacobian.pdf")
+        plt.savefig(self.figsdir / f"{self.savebase}_jacobian.pdf")
         plt.close()
+
+
+class MeasFigs:
+    def __init__(self, filename: str, data: dict):
+        self.figsdir = mk_figsdir(filename=filename)
+        self.filename = Path(filename).name
+        self.data = data
+        self.savebase = self.filename.split(".")[0]
+
+    def plot_spectra(self):
+        frequency = self.data["f"] / 1e9
+        spectra = self.data["y"]
+        gs = GridSpec(1, 1)
+
+        fig = plt.figure()
+        ax = fig.add_subplot(gs[0, 0])
+        ax.minorticks_on()
+        ax.grid(which="both", linestyle="dashed", alpha=0.2)
+        ax.set_title(f"Measured spectra from {self.filename}")
+        ax.set_ylabel(r"$T_B$ [K]")
+        ax.set_xlabel(r"$\nu$ [GHz]")
+        ax.plot(frequency, spectra, color="black")
+
+        plt.savefig(self.figsdir / f"{self.savebase}_meas_spectra.pdf")
+        plt.close()
+
+
+
+
+
+
