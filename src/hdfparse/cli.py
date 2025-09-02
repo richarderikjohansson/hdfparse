@@ -1,13 +1,11 @@
 import argparse
 from .io import check_if_file_exists, read_file, save_matlab
 from .plot import RetFigs, MeasFigs
-from tqdm import tqdm, trange
-
-
-#allowed_units = ["spectra", "vmr", "avk", "jacobian"]
+from tqdm import tqdm
 
 
 def main():
+    """Entry point for the CLI"""
     parser = argparse.ArgumentParser(add_help=True)
     parser.add_argument("filename", nargs="+", help="HDF5 file to read")
     parser.add_argument("--plot", action="store_true")

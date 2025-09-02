@@ -5,19 +5,39 @@ from .io import mk_figsdir, Path
 import matplotlib as mpl
 
 
-def calculate_mr(avk) -> np.ndarray:
+def calculate_mr(avk: np.ndarray) -> np.ndarray:
+    """Function to calculate the measurement response
+
+    Args:
+        avk: averaging kernel matrix from retrieval
+
+    Returns:
+        measurement response
+    """
     mr = np.array([sum(row) for row in avk])
     return mr
 
 
 class RetFigs:
+    """
+    Class to plot figures for associated with the retrieval
+    """
+
     def __init__(self, filename: str, data: dict):
+        """Init constructor
+
+        Args:
+            filename: path to the file
+            data: dictionary with data
+        """
         self.figsdir = mk_figsdir(filename=filename)
         self.filename = Path(filename).name
         self.data = data
         self.savebase = self.filename.split(".")[0]
 
     def plot_spectra(self):
+        """Method to plot spectra used for retrieval together with residual"""
+
         frequency = self.data["f_backend"] / 1e9
         spectra = self.data["y"]
         fit = self.data["yf"]
@@ -48,6 +68,8 @@ class RetFigs:
         plt.close()
 
     def plot_vmr(self):
+        """Method to plot the volume mixing ratio"""
+
         pressure = self.data["p_grid"] / 1e2
         plen = len(pressure)
         apriori = self.data["vmr_field"][0, :, 0, 0] * 1e6
@@ -70,6 +92,12 @@ class RetFigs:
         plt.close()
 
     def plot_avk(self):
+        """Method to plot the avk
+
+        In this method is the averaging kernel matrix together with
+        the measurement response and also the full averaging kernel
+        matrix
+        """
         pressure = self.data["p_grid"] / 1e2
         plen = len(pressure)
         avk = self.data["avk"][0:plen, 0:plen]
@@ -135,6 +163,8 @@ class RetFigs:
         plt.close()
 
     def plot_jacobian(self):
+        """Method to plot the Jacobian matrix"""
+
         pressure = self.data["p_grid"] / 1e2
         plen = len(pressure)
         frequency = self.data["f_backend"] / 1e9
@@ -157,13 +187,24 @@ class RetFigs:
 
 
 class MeasFigs:
+    """
+    Class to plot figures associated with the measurement
+    """
+
     def __init__(self, filename: str, data: dict):
+        """Init constructor
+
+        Args:
+            filename: path to the filename
+            data: dictionary containing measurement data
+        """
         self.figsdir = mk_figsdir(filename=filename)
         self.filename = Path(filename).name
         self.data = data
         self.savebase = self.filename.split(".")[0]
 
     def plot_spectra(self):
+        """Method to plot the measured spectra"""
         frequency = self.data["f"] / 1e9
         spectra = self.data["y"]
         gs = GridSpec(1, 1)
@@ -179,9 +220,3 @@ class MeasFigs:
 
         plt.savefig(self.figsdir / f"{self.savebase}_meas_spectra.pdf")
         plt.close()
-
-
-
-
-
-
