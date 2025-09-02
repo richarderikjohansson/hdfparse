@@ -73,3 +73,12 @@ hdfparse path/to/hdf5_file --export --plot
 
 And as for the single use of the two optional arguments will directories for the figures and the export 
 be created in the parent directory to the `.hdf5` file.
+
+## Usage: Measurement data
+
+As for retrieval data you can also export and plot measurement data. This is done with the optional 
+argument `--measure`. Below is an example of plotting and exporting measurement data
+
+```bash
+hdfparse path/to/hdf5_file --export --plot --measure
+```
