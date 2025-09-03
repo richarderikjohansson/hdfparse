@@ -1,13 +1,20 @@
 import argparse
-from .io import check_if_file_exists, read_file, save_matlab
+from .io import read_file, save_matlab
 from .plot import RetFigs, MeasFigs
 from .util import count_files
-from rich.progress import Progress, track
+from rich.progress import Progress
 from concurrent.futures import ThreadPoolExecutor
-from tqdm import tqdm
 
 
 def plot_task(progress, task_id, args, actual_files):
+    """Plotting task
+
+    Args:
+        progress: which progress it is assigned to
+        task_id: ID of the task
+        args: parsed input arguments
+        actual_files: files that have the necessary data
+    """
     if not args.measure:
         for file in actual_files:
             data = read_file(file, args.measure)
@@ -26,6 +33,14 @@ def plot_task(progress, task_id, args, actual_files):
 
 
 def export_task(progress, task_id, args, actual_files):
+    """Exporting task
+
+    Args:
+        progress: which progress it is assigned to
+        task_id: ID of the task
+        args: parsed input arguments
+        actual_files: files that have the necessary data
+    """
     for file in actual_files:
         data = read_file(file, args.measure)
         save_matlab(filename=file, data=data)
@@ -44,23 +59,35 @@ def main():
     run_cli(args=args)
 
 
-
 def run_cli(args):
+    """cli runner
+
+    Args:
+        args: arguments parsed from command line
+    """
     with Progress() as progress:
-        c, actual_files = count_files(filenames=args.filename,
-                                      measure=args.measure)
+        c, actual_files = count_files(
+            filenames=args.filename, measure=args.measure
+        )
         futures = []
         with ThreadPoolExecutor() as executor:
             if args.plot:
                 plot_id = progress.add_task("[cyan]Plotting...", total=c)
-                futures.append(executor.submit(plot_task, progress, plot_id, args, actual_files))
+                futures.append(
+                    executor.submit(
+                        plot_task, progress, plot_id, args, actual_files
+                    )
+                )
             if args.export:
                 export_id = progress.add_task("[magenta]Exporting...", total=c)
-                futures.append(executor.submit(export_task, progress, export_id, args, actual_files))
+                futures.append(
+                    executor.submit(
+                        export_task, progress, export_id, args, actual_files
+                    )
+                )
             for f in futures:
                 f.result()
 
+
 if __name__ == "__main__":
     main()
-
-
