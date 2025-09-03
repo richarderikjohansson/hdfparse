@@ -33,7 +33,6 @@ def read_file(filename: str, measure: bool) -> dict:
         if not measure:
             # this will not work for several retrievals
             retdata = [dataset for dataset in datasets if dataset not in measdata]
-
             try:
                 data = fh[retdata[0]]
             except IndexError:
@@ -93,7 +92,7 @@ def mk_figsdir(filename: str):
     return figsdir
 
 
-def format_tqdm_desc(plot: bool, export: bool) -> str:
+def format_out_desc(plot: bool, export: bool) -> str:
     """Function to format the tqdm description
 
     Args:
@@ -104,7 +103,7 @@ def format_tqdm_desc(plot: bool, export: bool) -> str:
         string with the tqdm description
     """
     if plot and export:
-        desc = "Plotting and exporting data"
+        plot = "Plotting and exporting data"
     elif plot and not export:
         desc = "Plotting data"
     elif export and not plot:

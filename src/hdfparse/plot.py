@@ -3,6 +3,7 @@ from matplotlib.gridspec import GridSpec
 import numpy as np
 from .io import mk_figsdir, Path
 import matplotlib as mpl
+mpl.use('agg')
 
 
 def calculate_mr(avk: np.ndarray) -> np.ndarray:

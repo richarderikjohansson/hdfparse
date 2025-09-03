@@ -1,7 +1,35 @@
 import argparse
 from .io import check_if_file_exists, read_file, save_matlab
 from .plot import RetFigs, MeasFigs
+from .util import count_files
+from rich.progress import Progress, track
+from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm
+
+
+def plot_task(progress, task_id, args, actual_files):
+    if not args.measure:
+        for file in actual_files:
+            data = read_file(file, args.measure)
+            obj = RetFigs(filename=file, data=data)
+            obj.plot_spectra()
+            obj.plot_vmr()
+            obj.plot_avk()
+            obj.plot_jacobian()
+            progress.update(task_id, advance=1)
+    else:
+        for file in actual_files:
+            data = read_file(file, args.measure)
+            obj = MeasFigs(filename=file, data=data)
+            obj.plot_spectra()
+            progress.update(task_id, advance=1)
+
+
+def export_task(progress, task_id, args, actual_files):
+    for file in actual_files:
+        data = read_file(file, args.measure)
+        save_matlab(filename=file, data=data)
+        progress.update(task_id, advance=1)
 
 
 def main():
@@ -13,37 +41,26 @@ def main():
     parser.add_argument("--measure", action="store_true")
     args = parser.parse_args()
 
-    if args.plot and args.export:
-        desc = "Plotting and exporting data"
-    elif args.plot and not args.export:
-        desc = "Plotting data"
-    elif args.export and not args.plot:
-        desc = "Exporting data"
-    else:
-        desc = "Not doing anything"
+    run_cli(args=args)
 
-    for filename in tqdm(args.filename, desc=desc):
-        if check_if_file_exists(filename):
-            data = read_file(filename=filename, measure=args.measure)
 
-        if data == {}:
-            tqdm.write(f"No retrieval found in {filename}")
-            continue
 
-        if args.plot:
-            if not args.measure:
-                obj = RetFigs(filename=filename, data=data)
-                obj.plot_spectra()
-                obj.plot_vmr()
-                obj.plot_avk()
-                obj.plot_jacobian()
-            else:
-                obj = MeasFigs(filename=filename, data=data)
-                obj.plot_spectra()
-
-        if args.export:
-            save_matlab(filename=filename, data=data)
-
+def run_cli(args):
+    with Progress() as progress:
+        c, actual_files = count_files(filenames=args.filename,
+                                      measure=args.measure)
+        futures = []
+        with ThreadPoolExecutor() as executor:
+            if args.plot:
+                plot_id = progress.add_task("[cyan]Plotting...", total=c)
+                futures.append(executor.submit(plot_task, progress, plot_id, args, actual_files))
+            if args.export:
+                export_id = progress.add_task("[magenta]Exporting...", total=c)
+                futures.append(executor.submit(export_task, progress, export_id, args, actual_files))
+            for f in futures:
+                f.result()
 
 if __name__ == "__main__":
     main()
+
+
