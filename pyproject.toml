@@ -1,6 +1,6 @@
 [project]
 name = "hdfparse"
-version = "0.1.0"
+version = "1.0.0"
 description = "CLI tool to parse hdf5 files"
 readme = "README.md"
 authors = [
