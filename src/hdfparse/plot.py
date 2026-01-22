@@ -38,6 +38,10 @@ class RetFigs:
         self.filename = Path(filename).name
         self.data = data
         self.savebase = self.filename.split(".")[0]
+        self.mantle = "#181825"
+        self.maroon = "#e64553"
+        self.peach = "#fe640b"
+        self.blue = "#1e66f5"
 
     def plot_spectra(self):
         """Method to plot spectra used for retrieval together with residual"""
@@ -56,8 +60,8 @@ class RetFigs:
         upper.set_title(f"Spectra from {self.filename}")
         upper.set_ylabel(r"$T_B$ [K]")
         upper.grid(which="both", linestyle="dashed", alpha=0.2)
-        upper.plot(frequency, spectra, label="Measurement", color="black")
-        upper.plot(frequency, fit, label="Fit", color="red")
+        upper.plot(frequency, spectra, label="Measurement", color=self.mantle)
+        upper.plot(frequency, fit, label="Fit", color=self.maroon)
         upper.legend()
 
         lower.plot(frequency, spectra - fit, label="Residual", color="dimgray")
@@ -92,11 +96,12 @@ class RetFigs:
         ax.semilogy(
             apriori,
             pressure,
-            color="gray",
+            color=self.maroon,
             label="apriori",
-            alpha=0.6,
+            alpha=0.8,
+            linewidth=1,
         )
-        ax.semilogy(vmr, pressure, label="Retrived")
+        ax.semilogy(vmr, pressure, label="Retrived", color=self.mantle)
         ax.legend()
         ax.set_xlim((-0.5, 10))
         plt.savefig(self.figsdir / f"{self.savebase}_vmr.pdf")
@@ -135,7 +140,7 @@ class RetFigs:
         ax.semilogy(
             mr,
             pressure,
-            color="red",
+            color=self.maroon,
             label="Measurement Response",
             linewidth=2,
         )
@@ -207,6 +212,10 @@ class MeasFigs:
         self.filename = Path(filename).name
         self.data = data
         self.savebase = self.filename.split(".")[0]
+        self.mantle = "#181825"
+        self.maroon = "#e64553"
+        self.peach = "#fe640b"
+        self.blue = "#1e66f5"
 
     def plot_spectra(self):
         """Method to plot the measured spectra"""
@@ -224,7 +233,7 @@ class MeasFigs:
         ax.set_title(f"Measured spectra from {self.filename}")
         ax.set_ylabel(r"$T_B$ [K]")
         ax.set_xlabel(r"$\nu$ [GHz]")
-        ax.plot(frequency[start:end], spectra[start:end], color="black")
+        ax.plot(frequency[start:end], spectra[start:end], color=self.mantle)
 
         plt.savefig(self.figsdir / f"{self.savebase}_meas_spectra.pdf")
         plt.close()
