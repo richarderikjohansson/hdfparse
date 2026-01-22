@@ -3,7 +3,9 @@ from matplotlib.gridspec import GridSpec
 import numpy as np
 from .io import mk_figsdir, Path
 import matplotlib as mpl
-mpl.use('agg')
+from cmcrameri import cm
+
+mpl.use("agg")
 
 
 def calculate_mr(avk: np.ndarray) -> np.ndarray:
@@ -31,6 +33,7 @@ class RetFigs:
             filename: path to the file
             data: dictionary with data
         """
+        self.cmap = cm.vik
         self.figsdir = mk_figsdir(filename=filename)
         self.filename = Path(filename).name
         self.data = data
@@ -44,7 +47,7 @@ class RetFigs:
         fit = self.data["yf"]
 
         gs = GridSpec(2, 1, height_ratios=[2, 1])
-        fig = plt.figure()
+        fig = plt.figure(figsize=(8, 6))
 
         upper = fig.add_subplot(gs[0, 0])
         lower = fig.add_subplot(gs[1, 0])
@@ -57,7 +60,7 @@ class RetFigs:
         upper.plot(frequency, fit, label="Fit", color="red")
         upper.legend()
 
-        lower.plot(frequency, spectra-fit, label="Residual", color="dimgray")
+        lower.plot(frequency, spectra - fit, label="Residual", color="dimgray")
         lower.minorticks_on()
         lower.grid(which="both", linestyle="dashed", alpha=0.2)
         lower.set_ylabel(r"$\Delta T_B$ [K]")
@@ -77,7 +80,7 @@ class RetFigs:
         vmr = self.data["x"][0:plen] * apriori
 
         gs = GridSpec(1, 1)
-        fig = plt.figure()
+        fig = plt.figure(figsize=(6, 8))
 
         ax = fig.add_subplot(gs[0, 0])
         plt.gca().invert_yaxis()
@@ -86,9 +89,16 @@ class RetFigs:
         ax.set_xlabel(r"VMR [ppmv]")
         ax.set_ylabel(r"Pressure [hPa]")
         ax.grid(which="both", alpha=0.2)
-        ax.semilogy(apriori, pressure, color="black", label="apriori")
+        ax.semilogy(
+            apriori,
+            pressure,
+            color="gray",
+            label="apriori",
+            alpha=0.6,
+        )
         ax.semilogy(vmr, pressure, label="Retrived")
         ax.legend()
+        ax.set_xlim((-0.5, 10))
         plt.savefig(self.figsdir / f"{self.savebase}_vmr.pdf")
         plt.close()
 
@@ -104,18 +114,16 @@ class RetFigs:
         avk = self.data["avk"][0:plen, 0:plen]
         mr = calculate_mr(avk)
 
-        my_map = mpl.colormaps.get_cmap("jet")
+        # my_map = mpl.colormaps.get_cmap("jet")
+        my_map = self.cmap
         cmapv = np.linspace(0, 1, len(pressure))
         sm = plt.cm.ScalarMappable(
             cmap=my_map,
-            norm=plt.Normalize(
-                vmin=pressure[0],
-                vmax=pressure[-1]
-            )
+            norm=plt.Normalize(vmin=pressure[0], vmax=pressure[-1]),
         )
 
         gs = GridSpec(1, 1)
-        fig = plt.figure()
+        fig = plt.figure(figsize=(6, 8))
 
         ax = fig.add_subplot(gs[0, 0])
         plt.gca().invert_yaxis()
@@ -135,11 +143,7 @@ class RetFigs:
         for i, row in enumerate(avk):
             ax.semilogy(row, pressure, color=my_map(cmapv[i]))
 
-        plt.colorbar(
-            sm,
-            ax=ax,
-            label="Pressure Level [hPa]"
-        )
+        plt.colorbar(sm, ax=ax, label="Pressure Level [hPa]")
 
         ax.legend()
         plt.savefig(self.figsdir / f"{self.savebase}_avk_line.pdf")
@@ -149,7 +153,7 @@ class RetFigs:
         plims = (max(pressure), min(pressure))
         gs = GridSpec(1, 1)
 
-        fig = plt.figure()
+        fig = plt.figure(figsize=(8, 6))
         ax = fig.add_subplot(gs[0, 0])
         ax.set_xlim(plims)
         ax.set_ylim(plims)
@@ -158,7 +162,7 @@ class RetFigs:
         ax.set_ylabel(r"Pressure [hPa]")
         ax.set_xlabel(r"Pressure [hPa]")
         ax.set_title(f"Averaging Kernels from {self.filename}")
-        cf = ax.contourf(X, Y, avk, cmap="jet")
+        cf = ax.contourf(X, Y, avk, cmap=self.cmap)
         plt.colorbar(cf, ax=ax, label="Averaging Kernels")
         fig.savefig(self.figsdir / f"{self.savebase}_avk_cf.pdf")
         plt.close()
@@ -173,7 +177,7 @@ class RetFigs:
         X, Y = np.meshgrid(frequency, pressure)
 
         gs = GridSpec(1, 1)
-        fig = plt.figure()
+        fig = plt.figure(figsize=(8, 6))
         ax = fig.add_subplot(gs[0, 0])
         ax.set_title(f"Jacobian from {self.filename}")
         ax.set_ylabel(r"Pressure [hPa]")
@@ -181,7 +185,7 @@ class RetFigs:
 
         plt.gca().invert_yaxis()
         plt.yscale("log")
-        cf = ax.contourf(X, Y, jacobian.transpose(), cmap="jet")
+        cf = ax.contourf(X, Y, jacobian.transpose(), cmap=self.cmap)
         plt.colorbar(cf, ax=ax)
         plt.savefig(self.figsdir / f"{self.savebase}_jacobian.pdf")
         plt.close()
@@ -206,18 +210,21 @@ class MeasFigs:
 
     def plot_spectra(self):
         """Method to plot the measured spectra"""
+
         frequency = self.data["f"] / 1e9
         spectra = self.data["y"]
+        start = 100
+        end = len(frequency) - 100
         gs = GridSpec(1, 1)
 
-        fig = plt.figure()
+        fig = plt.figure(figsize=(8, 6))
         ax = fig.add_subplot(gs[0, 0])
         ax.minorticks_on()
         ax.grid(which="both", linestyle="dashed", alpha=0.2)
         ax.set_title(f"Measured spectra from {self.filename}")
         ax.set_ylabel(r"$T_B$ [K]")
         ax.set_xlabel(r"$\nu$ [GHz]")
-        ax.plot(frequency, spectra, color="black")
+        ax.plot(frequency[start:end], spectra[start:end], color="black")
 
         plt.savefig(self.figsdir / f"{self.savebase}_meas_spectra.pdf")
         plt.close()
